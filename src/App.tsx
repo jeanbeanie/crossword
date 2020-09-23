@@ -1,14 +1,11 @@
 import React from 'react';
-// import logo from './logo.svg';
-// import './App.css';
+import './App.css';
 
 function App() {
   return (
-    <div className="App">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-    </div>
+    <div id="App">
+    	<h1>My App</h1>
+	</div>
   );
 }
 
