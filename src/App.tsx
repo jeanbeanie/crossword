@@ -51,7 +51,7 @@ function Grid(props:{width:number}) {
 function App() {
   return (
     <div id="App">
-    	<h1>Crossword</h1>
+	<h1>Crossword</h1>
 	<Grid width={gridWidth}/>
 	</div>
   );
