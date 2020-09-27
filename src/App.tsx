@@ -2,31 +2,35 @@ import React from 'react';
 import './App.css';
 import styled from 'styled-components';
 
+
+const gridWidth = 520;
+const tileWidth = 50;
+
+
 const StyledTile = styled.div`
 	border: 1px solid black;
 	height: ${(props: {width:number}) => props.width}px;
 	width: ${props => props.width}px;
 	float: left;
-	background-color: white;
+	background-color: ${props => props.color};
 `
 
 const StyledGrid = styled.div`
-	max-width: 420px;
-	min-height: 420px;
+	max-width: ${gridWidth}px;
+	min-height: ${gridWidth}px;
 	border: 6px solid lightblue;
 `
 
-function Tile(props:{id: number}) {
+function Tile(props:{id: number, color:string, tileLetter:string}) {
 	return (
-		<StyledTile width={tileWidth}>{props.id}</StyledTile>
+		<StyledTile width={tileWidth} color={props.color}>{props.id}{props.tileLetter}</StyledTile>
 	)
 }
 
-const gridWidth = 420;
-const tileWidth = 40;
+const wordBank = ["ba", "bar",]
 
 function Grid(props:{width:number}) {
-	const trueTileWidth = 40+2; // tile width plus border edges
+	const trueTileWidth = tileWidth+2; // tile width plus border edges
 	const numTilesAcross = props.width/trueTileWidth;
 	
 	const createGrid = function():JSX.Element[][]{
@@ -34,13 +38,21 @@ function Grid(props:{width:number}) {
 		for(let i=0;i<numTilesAcross;i++){
 			const row  = [];
 			for(let j=0;j<numTilesAcross;j++){
-				const id = parseInt(`${i}${j}`)
-				row.push(<Tile id={id} />);
+				const id = parseInt(`${i}${j}`);
+        const blocked = i+2===j || i+6===j || j+2===i || j+6===i // todo figure out patterns
+        const color = blocked ? "black" : "white";
+				row.push(<Tile id={id} color={color} tileLetter={""}/>); //todo tileLetter func
 			}
 			grid.push(row);
 		}
-		return grid;
+		return addWordsToGrid(grid);
 	}
+
+  const addWordsToGrid = (grid:JSX.Element[][]) => {
+    //
+    return grid;
+  };
+
 	return (
 		<StyledGrid>
 			{createGrid()}
