@@ -37,29 +37,23 @@ interface TileProps {
   key: number,
 }
 
-const horizontalWordMap:number[] = [];
 function Grid(props:{width:number}) {
-	const trueTileWidth = tileWidth+2; // tile width plus border edges
+  const trueTileWidth = tileWidth+2; // tile width plus border edges
 	const numTilesAcross = props.width/trueTileWidth;
-  
-  //const [horizontalWordMap, setHorizontalWordMap] = useState<any>([]);   
 
   const isTileStartOfWord = (id:number,i:number,j:number,prevTileIsBlocked:boolean) => {
     if(id === 0){
-    console.log('in 1')
       return true;
     }
     else if (j === 0 && !prevTileIsBlocked) {
-    console.log('in 2')
       return true;
     } else {
      return prevTileIsBlocked
     }
   }
 	
-	const createGrid = function():JSX.Element[][]{
-		const grid:TileProps[][] = [];
-
+	const createGrid = function():{tileMap:JSX.Element[][], horizontalWordMap:number[]}{
+    const grid:TileProps[][] = [];
 		for(let i=0;i<numTilesAcross;i++){
 			const row  = [];
 			for(let j=0;j<numTilesAcross;j++){
@@ -70,44 +64,48 @@ function Grid(props:{width:number}) {
 			}
 			grid.push(row);
 		}
-		return addTilesToGrid(grid);
+    const tileGrid = addTilesToGrid(grid)
+    return tileGrid
 	}
 
   const addTilesToGrid = (grid:TileProps[][]) => {
     const tileGrid = [];
-		for(let i=0;i<numTilesAcross;i++){
+    const horizontalWords = [];
+		
+    for(let i=0;i<numTilesAcross;i++){
 			const row  = [];
+
 			for(let j=0;j<numTilesAcross;j++){
-        const tileProps = grid[i][j]
-        const isBlocked = j === 0 ? true : grid[i][j-1].isBlocked
-        const isStartOfWord = isTileStartOfWord(tileProps.id,i,j,isBlocked);
-        //const horizontal = isStartOfWord ? [...horizontalWordMap, tileProps.id] : horizontalWordMap;
-        if(isStartOfWord){
-          horizontalWordMap.push(tileProps.id);
-          console.log("HWM", horizontalWordMap)
+        const tileProps = grid[i] ? grid[i][j] : null;
+        if(tileProps){
+          const isBlocked = j === 0 ? true : grid[i][j-1].isBlocked
+          const isStartOfWord = isTileStartOfWord(tileProps.id,i,j,isBlocked);
+          if(isStartOfWord){
+            horizontalWords.push(tileProps.id);
+          }
+          row.push(<Tile {...tileProps}/>); //todo tileLetter func 
         }
-	      console.log(isStartOfWord, tileProps.key)		
-        row.push(<Tile {...tileProps}/>); //todo tileLetter func 
       }
       tileGrid.push(row);
     }
-    return tileGrid;
+    return {tileMap:tileGrid, horizontalWordMap:horizontalWords}
   };
+  
+  const [state, setState] = useState<any>(createGrid());
 
-	return (
+  return (
 		<StyledGrid>
-			{createGrid()}
+			{state.tileMap}
 		</StyledGrid>
 	);
 }
 
 function App() {
-
   return (
     <div id="App">
-	<h1>Crossword</h1>
-	<Grid width={gridWidth}/>
-	</div>
+	    <h1>Crossword</h1>
+	    <Grid width={gridWidth}/>
+	  </div>
   );
 }
 
