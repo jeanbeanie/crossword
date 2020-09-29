@@ -69,8 +69,8 @@ function Grid(props:{width:number}) {
 	}
 
   const addTilesToGrid = (grid:TileProps[][]) => {
-    const tileGrid = [];
-    const horizontalWords = [];
+    const tileMap = [];
+    const horizontalWordMap = [];
 		
     for(let i=0;i<numTilesAcross;i++){
 			const row  = [];
@@ -81,14 +81,14 @@ function Grid(props:{width:number}) {
           const isBlocked = j === 0 ? true : grid[i][j-1].isBlocked
           const isStartOfWord = isTileStartOfWord(tileProps.id,i,j,isBlocked);
           if(isStartOfWord){
-            horizontalWords.push(tileProps.id);
+            horizontalWordMap.push(tileProps.id);
           }
           row.push(<Tile {...tileProps}/>); //todo tileLetter func 
         }
       }
-      tileGrid.push(row);
+      tileMap.push(row);
     }
-    return {tileMap:tileGrid, horizontalWordMap:horizontalWords}
+    return {tileMap, horizontalWordMap}
   };
   
   const [state, setState] = useState<any>(createGrid());
