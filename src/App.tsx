@@ -8,7 +8,7 @@ const tileWidth = 50;
 
 
 const StyledTile = styled.div`
-	border: 1px solid black;
+  border: 1px solid black;
 	height: ${(props: {width:number}) => props.width}px;
 	width: ${props => props.width}px;
 	float: left;
