@@ -13,18 +13,18 @@ const StyledTile = styled.div`
 	width: ${props => props.width}px;
 	float: left;
 	background-color: ${props => props.color};
-`
+`;
 
 const StyledGrid = styled.div`
 	max-width: ${gridWidth}px;
 	min-height: ${gridWidth}px;
 	border: 6px solid lightblue;
-`
+`;
 
 function Tile(props:{id: number, color:string, tileLetter:string}) {
 	return (
 		<StyledTile width={tileWidth} color={props.color}>{props.id}{props.tileLetter}</StyledTile>
-	)
+  );
 }
 
 //const wordBank = ["ba", "bar",]
