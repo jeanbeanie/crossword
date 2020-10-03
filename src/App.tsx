@@ -20,8 +20,16 @@ const StyledGrid = styled.div`
 	min-height: ${gridWidth}px;
 	border: 6px solid lightblue;
 `;
+    
+interface TileProps {
+  isBlocked: boolean,
+  id: number,
+  color: string,
+  tileLetter:string,
+  key?: number,
+}
 
-function Tile(props:{id: number, color:string, tileLetter:string}) {
+function Tile(props:TileProps) {
 	return (
 		<StyledTile width={tileWidth} color={props.color}>{props.id}{props.tileLetter}</StyledTile>
   );
@@ -29,15 +37,14 @@ function Tile(props:{id: number, color:string, tileLetter:string}) {
 
 //const wordBank = ["ba", "bar",]
 
-interface TileProps {
-  isBlocked: boolean,
-  id: number,
-  color: string,
-  tileLetter:string,
-  key: number,
+
+interface GridProps { width:number }
+interface GridState {
+  tileMap: JSX.Element[][],
+  horizontalWordMap: number[],
 }
 
-function Grid(props:{width:number}) {
+function Grid(props:GridProps) {
   const trueTileWidth = tileWidth+2; // tile width plus border edges
 	const numTilesAcross = props.width/trueTileWidth;
 
@@ -52,15 +59,15 @@ function Grid(props:{width:number}) {
     }
   }
 	
-	const createGrid = function():{tileMap:JSX.Element[][], horizontalWordMap:number[]}{
+	const createGridState = function():GridState {
     const grid:TileProps[][] = [];
 		for(let i=0;i<numTilesAcross;i++){
 			const row  = [];
 			for(let j=0;j<numTilesAcross;j++){
 				const id = parseInt(`${i}${j}`);
-        const isBlocked = i+2===j || i+6===j || j+2===i || j+6===i // todo figure out patterns
+        const isBlocked = i+2===j || i+6===j || j+2===i || j+6===i // todo figure out other patterns
         const color = isBlocked ? "black" : "white";
-				row.push({id, color, tileLetter:"", isBlocked, key:id}); //todo tileLetter func
+				row.push({id, color, tileLetter:"", isBlocked, key:id}); //todo tileLetter func here?
 			}
 			grid.push(row);
 		}
@@ -91,7 +98,7 @@ function Grid(props:{width:number}) {
     return {tileMap, horizontalWordMap}
   };
   
-  const [state, setState] = useState<any>(createGrid());
+  const [state, setState] = useState<GridState>(createGridState());
 
   return (
 		<StyledGrid>
