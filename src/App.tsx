@@ -29,7 +29,7 @@ interface TileProps {
   key?: number;
 }
 
-function Tile(props: TileProps) {
+function Tile(props: TileProps): JSX.Element {
 	return (
 		<StyledTile width={tileWidth} color={props.color}>{props.id}{props.tileLetter}</StyledTile>
   );
