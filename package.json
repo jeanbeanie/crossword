@@ -39,6 +39,7 @@
     ]
   },
   "devDependencies": {
-    "babel-plugin-styled-components": "^1.11.1"
+    "babel-plugin-styled-components": "^1.11.1",
+    "eslint-plugin-react": "^7.21.3"
   }
 }
