@@ -7,12 +7,12 @@ const gridWidth = 520;
 const tileWidth = 50;
 
 
-const StyledTile = styled.div`
+const StyledTile = styled.div<{width: number; color: string}>`
   border: 1px solid black;
-	height: ${(props: {width: number}) => props.width}px;
-	width: ${props => props.width}px;
+	height: ${(props: {width: number}): number => props.width}px;
+	width: ${(props: {width: number}): number => props.width}px;
 	float: left;
-	background-color: ${props => props.color};
+	background-color: ${(props: {color: string}): string => props.color};
 `;
 
 const StyledGrid = styled.div`
@@ -47,14 +47,17 @@ interface GridState {
 
 interface TileStartParams {
 //  id: number`
-id: number;i: number;j: number;prevTileIsBlocked: boolean; 
+  id: number;
+  i: number;
+  j: number;
+  prevTileIsBlocked: boolean; 
 }
 
-function Grid(props: GridProps) {
-  const trueTileWidth = tileWidth+2; // tile width plus border edges
+function Grid(props: GridProps): JSX.Element {
+  const trueTileWidth = (tileWidth + 2); // tile width plus border edges
 	const numTilesAcross = props.width/trueTileWidth;
 
-  const isTileStartOfHorizontalWord = (tileStartParams: TileStartParams) => {
+  const isTileStartOfHorizontalWord = (tileStartParams: TileStartParams): boolean => {
     const {id, j, prevTileIsBlocked} = tileStartParams;
     if(id === 0){
       return true;
@@ -66,7 +69,7 @@ function Grid(props: GridProps) {
     }
   }
 
-  const isTileStartOfVerticalWord = (tileStartParams: TileStartParams) => {
+  const isTileStartOfVerticalWord = (tileStartParams: TileStartParams): boolean => {
     const {id, i, prevTileIsBlocked} = tileStartParams;
     if(id === 0){
       return true;
@@ -78,23 +81,7 @@ function Grid(props: GridProps) {
     }
   }
 
-	const createGridState = function(): GridState {
-    const grid: TileProps[][] = [];
-		for(let i=0;i<numTilesAcross;i++){
-			const row  = [];
-			for(let j=0;j<numTilesAcross;j++){
-				const id = parseInt(`${i}${j}`);
-        const isBlocked = i+2===j || i+6===j || j+2===i || j+6===i // todo figure out other patterns
-        const color = isBlocked ? "black" : "white";
-				row.push({id, color, tileLetter:"", isBlocked, key:id}); //todo tileLetter func here?
-			}
-			grid.push(row);
-		}
-    const tileGrid = addTilesToGrid(grid)
-    return tileGrid
-	}
-
-  const addTilesToGrid = (grid: TileProps[][]) => {
+  const addTilesToGrid = (grid: TileProps[][]): GridState => {
     const tileMap = [];
     const horizontalWordMap = [];
     const verticalWordMap = [];
@@ -115,6 +102,7 @@ function Grid(props: GridProps) {
           if(isStartOfHorizontalWord){
             horizontalWordMap.push(tileProps.id);
           } if (isStartOfVerticalWord) {
+            // TODO this is wrong fix it after cleaning
             verticalWordMap.push(tileProps.id)
           }
           row.push(<Tile {...tileProps}/>); //todo tileLetter func 
@@ -126,7 +114,25 @@ function Grid(props: GridProps) {
     return {tileMap, horizontalWordMap, verticalWordMap}
   };
   
-  const [state, setState] = useState<GridState>(createGridState());
+
+	const createGridState = function(): GridState {
+    const grid: TileProps[][] = [];
+		for(let i=0;i<numTilesAcross;i++){
+			const row  = [];
+			for(let j=0;j<numTilesAcross;j++){
+				const id = parseInt(`${i}${j}`);
+        const isBlocked = i+2===j || i+6===j || j+2===i || j+6===i // todo figure out other patterns
+        const color = isBlocked ? "black" : "white";
+				row.push({id, color, tileLetter:"", isBlocked, key:id}); //todo tileLetter func here?
+			}
+			grid.push(row);
+		}
+    const tileGrid = addTilesToGrid(grid)
+    return tileGrid
+	}
+
+  // TODO set setState 
+  const [state] = useState<GridState>(createGridState());
 
   return (
     <React.Fragment>
@@ -137,12 +143,12 @@ function Grid(props: GridProps) {
 	);
 }
 
-function App() {
+function App(): JSX.Element {
   return (
     <div id="App">
-	    <h1>Crossword</h1>
-	    <Grid width={gridWidth}/>
-	  </div>
+      <h1>Crossword</h1>
+      <Grid width={gridWidth}/>
+    </div>
   );
 }
 
