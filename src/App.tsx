@@ -9,7 +9,7 @@ const tileWidth = 50;
 
 const StyledTile = styled.div`
   border: 1px solid black;
-	height: ${(props: {width:number}) => props.width}px;
+	height: ${(props: {width: number}) => props.width}px;
 	width: ${props => props.width}px;
 	float: left;
 	background-color: ${props => props.color};
@@ -22,14 +22,14 @@ const StyledGrid = styled.div`
 `;
     
 interface TileProps {
-  isBlocked: boolean,
-  id: number,
-  color: string,
-  tileLetter:string,
-  key?: number,
+  isBlocked: boolean;
+  id: number;
+  color: string;
+  tileLetter: string;
+  key?: number;
 }
 
-function Tile(props:TileProps) {
+function Tile(props: TileProps) {
 	return (
 		<StyledTile width={tileWidth} color={props.color}>{props.id}{props.tileLetter}</StyledTile>
   );
@@ -38,17 +38,24 @@ function Tile(props:TileProps) {
 //const wordBank = ["ba", "bar",]
 
 
-interface GridProps { width:number }
+interface GridProps { width: number }
 interface GridState {
-  tileMap: JSX.Element[][],
-  horizontalWordMap: number[],
+  tileMap: JSX.Element[][];
+    horizontalWordMap: number[];
+    verticalWordMap: number[];
 }
 
-function Grid(props:GridProps) {
+interface TileStartParams {
+//  id: number`
+id: number;i: number;j: number;prevTileIsBlocked: boolean; 
+}
+
+function Grid(props: GridProps) {
   const trueTileWidth = tileWidth+2; // tile width plus border edges
 	const numTilesAcross = props.width/trueTileWidth;
 
-  const isTileStartOfWord = (id:number,i:number,j:number,prevTileIsBlocked:boolean) => {
+  const isTileStartOfHorizontalWord = (tileStartParams: TileStartParams) => {
+    const {id, j, prevTileIsBlocked} = tileStartParams;
     if(id === 0){
       return true;
     }
@@ -58,9 +65,21 @@ function Grid(props:GridProps) {
      return prevTileIsBlocked
     }
   }
-	
-	const createGridState = function():GridState {
-    const grid:TileProps[][] = [];
+
+  const isTileStartOfVerticalWord = (tileStartParams: TileStartParams) => {
+    const {id, i, prevTileIsBlocked} = tileStartParams;
+    if(id === 0){
+      return true;
+    }
+    else if (i === 0 && !prevTileIsBlocked) {
+      return true;
+    } else {
+      return prevTileIsBlocked
+    }
+  }
+
+	const createGridState = function(): GridState {
+    const grid: TileProps[][] = [];
 		for(let i=0;i<numTilesAcross;i++){
 			const row  = [];
 			for(let j=0;j<numTilesAcross;j++){
@@ -75,35 +94,46 @@ function Grid(props:GridProps) {
     return tileGrid
 	}
 
-  const addTilesToGrid = (grid:TileProps[][]) => {
+  const addTilesToGrid = (grid: TileProps[][]) => {
     const tileMap = [];
     const horizontalWordMap = [];
-		
+    const verticalWordMap = [];
+
     for(let i=0;i<numTilesAcross;i++){
 			const row  = [];
 
 			for(let j=0;j<numTilesAcross;j++){
         const tileProps = grid[i] ? grid[i][j] : null;
         if(tileProps){
-          const isBlocked = j === 0 ? true : grid[i][j-1].isBlocked
-          const isStartOfWord = isTileStartOfWord(tileProps.id,i,j,isBlocked);
-          if(isStartOfWord){
+          const isLeftBlocked = j === 0 ? true : grid[i][j-1].isBlocked
+          const isUpperBlocked = i === 0 ? true : grid[i-1][j].isBlocked;
+          const tileStartFuncParams = {id:tileProps.id, i, j};
+          
+          const isStartOfHorizontalWord = isTileStartOfHorizontalWord({...tileStartFuncParams, prevTileIsBlocked:isLeftBlocked});
+          const isStartOfVerticalWord = isTileStartOfVerticalWord({...tileStartFuncParams, prevTileIsBlocked:isUpperBlocked});
+          
+          if(isStartOfHorizontalWord){
             horizontalWordMap.push(tileProps.id);
+          } if (isStartOfVerticalWord) {
+            verticalWordMap.push(tileProps.id)
           }
           row.push(<Tile {...tileProps}/>); //todo tileLetter func 
         }
       }
       tileMap.push(row);
     }
-    return {tileMap, horizontalWordMap}
+    console.log( {tileMap, horizontalWordMap, verticalWordMap} );
+    return {tileMap, horizontalWordMap, verticalWordMap}
   };
   
   const [state, setState] = useState<GridState>(createGridState());
 
   return (
-		<StyledGrid>
-			{state.tileMap}
-		</StyledGrid>
+    <React.Fragment>
+      <StyledGrid>
+        {state.tileMap}
+      </StyledGrid>
+    </React.Fragment>
 	);
 }
 
