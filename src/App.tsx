@@ -6,6 +6,7 @@ import styled from 'styled-components';
 const GRID_WIDTH = 520;
 const TILE_WIDTH = 50;
 
+/*** TILE COMPONENTS ***/
 
 const StyledTile = styled.div<{width: number; color: string}>`
   border: 1px solid black;
@@ -13,12 +14,6 @@ const StyledTile = styled.div<{width: number; color: string}>`
 	width: ${(props: {width: number}): number => props.width}px;
 	float: left;
 	background-color: ${(props: {color: string}): string => props.color};
-`;
-
-const StyledGrid = styled.div`
-	max-width: ${GRID_WIDTH}px;
-	min-height: ${GRID_WIDTH}px;
-	border: 6px solid lightblue;
 `;
     
 interface TileProps {
@@ -35,49 +30,41 @@ function Tile(props: TileProps): JSX.Element {
   );
 }
 
-//const wordBank = ["ba", "bar",]
+/*** END OF TILE COMPONENTS ***/
 
+
+/*** GRID COMPONENTS ***/
 
 interface GridProps { width: number }
 interface GridState {
   tileMap: JSX.Element[][];
-    horizontalWordMap: number[];
-    verticalWordMap: number[];
+  horizontalWordMap: number[];
+  verticalWordMap: number[];
 }
 
-interface TileStartParams {
-//  id: number`
-  id: number;
-  i: number;
-  j: number;
-  prevTileIsBlocked: boolean; 
-}
-
+const StyledGrid = styled.div`
+	max-width: ${GRID_WIDTH}px;
+	min-height: ${GRID_WIDTH}px;
+	border: 6px solid lightblue;
+`;
+    
 function Grid(props: GridProps): JSX.Element {
   const trueTileWidth = (TILE_WIDTH + 2); // tile width plus border edges
 	const numTilesAcross = props.width/trueTileWidth;
 
-  const isTileStartOfHorizontalWord = (tileStartParams: TileStartParams): boolean => {
-    const {id, j, prevTileIsBlocked} = tileStartParams;
-    if(id === 0){
-      return true;
-    }
-    else if (j === 0 && !prevTileIsBlocked) {
+  const tileStartsHorizontalWord = (tile: TileProps, colIndex: number, leftTileIsBlocked: boolean): boolean => {
+    if(colIndex === 0 && !tile.isBlocked){
       return true;
     } else {
-     return prevTileIsBlocked
+      return leftTileIsBlocked && !tile.isBlocked;
     }
   }
 
-  const isTileStartOfVerticalWord = (tileStartParams: TileStartParams): boolean => {
-    const {id, i, prevTileIsBlocked} = tileStartParams;
-    if(id === 0){
+  const tileStartsVerticalWord = (tile: TileProps, rowIndex: number, upperTileIsBlocked: boolean): boolean => {
+    if (rowIndex === 0 && !tile.isBlocked) {
       return true;
-    }
-    else if (i === 0 && !prevTileIsBlocked) {
-      return true;
-    } else {
-      return prevTileIsBlocked
+    } else { 
+      return upperTileIsBlocked && !tile.isBlocked; 
     }
   }
 
@@ -86,23 +73,25 @@ function Grid(props: GridProps): JSX.Element {
     const horizontalWordMap = [];
     const verticalWordMap = [];
 
-    for(let i=0;i<numTilesAcross;i++){
-			const row  = [];
+    // build Grid rows
+    for(let rowIndex=0; rowIndex<numTilesAcross; rowIndex++){
+      const row  = [];
 
-			for(let j=0;j<numTilesAcross;j++){
-        const tileProps = grid[i] ? grid[i][j] : null;
+      // build Grid columns
+			for(let colIndex=0; colIndex<numTilesAcross; colIndex++){
+        const tileProps = grid[rowIndex] ? grid[rowIndex][colIndex] : false;
         if(tileProps){
-          const isLeftBlocked = j === 0 ? true : grid[i][j-1].isBlocked
-          const isUpperBlocked = i === 0 ? true : grid[i-1][j].isBlocked;
-          const tileStartFuncParams = {id:tileProps.id, i, j};
+          const isLeftBlocked = colIndex === 0 ? true : grid[rowIndex][colIndex-1].isBlocked
+          const isUpperBlocked = rowIndex === 0 ? true : grid[rowIndex-1][colIndex].isBlocked;
+          // console.log("grid[rowIndex][colIndex]", grid[rowIndex][colIndex], "row", rowIndex, "col", colIndex) 
+          // console.log("isLeftBlocked", isLeftBlocked);
+          // console.log("isUpperBlocked", isUpperBlocked);
+          const startsHorizontalWord = tileStartsHorizontalWord(tileProps, colIndex, isLeftBlocked);
+          const startsVerticalWord = tileStartsVerticalWord(tileProps, rowIndex, isUpperBlocked)
           
-          const isStartOfHorizontalWord = isTileStartOfHorizontalWord({...tileStartFuncParams, prevTileIsBlocked:isLeftBlocked});
-          const isStartOfVerticalWord = isTileStartOfVerticalWord({...tileStartFuncParams, prevTileIsBlocked:isUpperBlocked});
-          
-          if(isStartOfHorizontalWord){
+          if(startsHorizontalWord){
             horizontalWordMap.push(tileProps.id);
-          } if (isStartOfVerticalWord) {
-            // TODO this is wrong fix it after cleaning
+          } if (startsVerticalWord) {
             verticalWordMap.push(tileProps.id)
           }
           row.push(<Tile {...tileProps}/>); //todo tileLetter func 
@@ -142,6 +131,8 @@ function Grid(props: GridProps): JSX.Element {
     </React.Fragment>
 	);
 }
+
+/*** END OF GRID COMPONENTS ***/
 
 function App(): JSX.Element {
   return (
