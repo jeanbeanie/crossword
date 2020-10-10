@@ -3,8 +3,8 @@ import './App.css';
 import styled from 'styled-components';
 
 
-const gridWidth = 520;
-const tileWidth = 50;
+const GRID_WIDTH = 520;
+const TILE_WIDTH = 50;
 
 
 const StyledTile = styled.div<{width: number; color: string}>`
@@ -16,8 +16,8 @@ const StyledTile = styled.div<{width: number; color: string}>`
 `;
 
 const StyledGrid = styled.div`
-	max-width: ${gridWidth}px;
-	min-height: ${gridWidth}px;
+	max-width: ${GRID_WIDTH}px;
+	min-height: ${GRID_WIDTH}px;
 	border: 6px solid lightblue;
 `;
     
@@ -31,7 +31,7 @@ interface TileProps {
 
 function Tile(props: TileProps): JSX.Element {
 	return (
-		<StyledTile width={tileWidth} color={props.color}>{props.id}{props.tileLetter}</StyledTile>
+		<StyledTile width={TILE_WIDTH} color={props.color}>{props.id}{props.tileLetter}</StyledTile>
   );
 }
 
@@ -54,7 +54,7 @@ interface TileStartParams {
 }
 
 function Grid(props: GridProps): JSX.Element {
-  const trueTileWidth = (tileWidth + 2); // tile width plus border edges
+  const trueTileWidth = (TILE_WIDTH + 2); // tile width plus border edges
 	const numTilesAcross = props.width/trueTileWidth;
 
   const isTileStartOfHorizontalWord = (tileStartParams: TileStartParams): boolean => {
@@ -147,7 +147,7 @@ function App(): JSX.Element {
   return (
     <div id="App">
       <h1>Crossword</h1>
-      <Grid width={gridWidth}/>
+      <Grid width={GRID_WIDTH}/>
     </div>
   );
 }
