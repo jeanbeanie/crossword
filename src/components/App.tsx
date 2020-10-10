@@ -1,65 +1,15 @@
 //import React, {useState} from 'react';
 import React from 'react';
-import styled from 'styled-components';
+import {TileProps} from './../interfaces/Tile';
+import Tile from './../components/Tile';
+import Grid from './../components/Grid';
 
 
+// CONSTANTS
+//
 const GRID_WIDTH = 520;
 const TILE_WIDTH = 50;
 
-/*** TILE COMPONENTS ***/
-
-const StyledTile = styled.div<{width: number; color: string}>`
-  border: 1px solid black;
-	height: ${(props: {width: number}): number => props.width}px;
-	width: ${(props: {width: number}): number => props.width}px;
-	float: left;
-	background-color: ${(props: {color: string}): string => props.color};
-`;
-    
-interface TileProps {
-  isBlocked: boolean;
-  id: number;
-  color: string;
-  displayLetter: string;
-  key?: number;
-  width: number;
-}
-
-function Tile(props: TileProps): JSX.Element {
-  const {width, color, displayLetter, id} = props;
-	return (
-		<StyledTile width={width} color={color}> {id}{displayLetter} </StyledTile>
-  );
-}
-
-/*** END OF TILE COMPONENTS ***/
-
-
-/*** GRID COMPONENTS ***/
-
-interface GridProps { 
-  width: number;
-  tileWidth: number;
-  tileMap: JSX.Element[][];
-}
-
-const StyledGrid = styled.div<{width: number}>`
-  max-width: ${(props): number => props.width}px;
-  min-height: ${(props): number => props.width}px;
-	border: 6px solid lightblue;
-`;
-    
-function Grid(props: GridProps): JSX.Element { 
-  return (
-    <React.Fragment>
-      <StyledGrid width={props.width}>
-        {props.tileMap}
-      </StyledGrid>
-    </React.Fragment>
-	);
-}
-
-/*** END OF GRID COMPONENTS ***/
 
 
 function App(): JSX.Element {
@@ -89,12 +39,16 @@ function App(): JSX.Element {
 		for(let i=0; i<numTilesAcross; i++){
 			const row: TileProps[] = [];
 			for(let j=0; j<numTilesAcross; j++){
-        const id = parseInt(`${i}${j}`);
-        const isBlocked = i+2===j || i+6===j || j+2===i || j+6===i // todo figure out other patterns
-        const color = isBlocked ? "black" : "white";
-        const width = TILE_WIDTH;
-
-				row.push({width, id, color, displayLetter:"", isBlocked, key:id}); //todo tileLetter func here?
+        const tileIsBlocked = i+2===j || i+6===j || j+2===i || j+6===i; // todo figure out other patterns
+        const tileProps = {
+          id: parseInt(`${i}${j}`),
+          color: tileIsBlocked ? "black" : "white",
+          width: TILE_WIDTH,
+          letterToDisplay: "",
+          letterIsDisplayed: false,
+          isBlocked: tileIsBlocked,
+        }
+        row.push(tileProps); //todo tileLetter func here?
 			}
 			grid.push(row);
     }
@@ -129,7 +83,7 @@ function App(): JSX.Element {
           } if (startsVerticalWord) {
             verticalWordMap.push(tileProps.id)
           }
-          row.push(<Tile {...tileProps}/>); //todo tileLetter func 
+          row.push(<Tile key={tileProps.id} {...tileProps}/>); //todo tileLetter func 
         }
       }
       tileMap.push(row);
