@@ -10,6 +10,7 @@ import Grid from './../components/Grid';
 const GRID_WIDTH = 520;
 const TILE_WIDTH = 50;
 
+type GridT = TileProps[][];
 
 
 function App(): JSX.Element {
@@ -33,9 +34,13 @@ function App(): JSX.Element {
     }
   }
 
-  const returnTilePropsGrid = (): TileProps[][] => { 
-    const grid: TileProps[][] = [];
-    
+  const addWordsToGrid = (grid: GridT): GridT => {
+    return grid;
+  };
+
+  const returnTilePropsGrid = (): GridT => { 
+    const grid: GridT = [];
+
 		for(let i=0; i<numTilesAcross; i++){
 			const row: TileProps[] = [];
 			for(let j=0; j<numTilesAcross; j++){
@@ -52,6 +57,8 @@ function App(): JSX.Element {
 			}
 			grid.push(row);
     }
+    addWordsToGrid(grid);
+
     return grid;
   }
 
