@@ -35,7 +35,48 @@ function App(): JSX.Element {
   }
 
   const addWordsToGrid = (grid: GridT): GridT => {
-    return grid;
+    const updatedGrid = grid;
+    //const wordBank = ['a', 'aba', 'ba','bar','car', 'y', 'aar', 'yar', 'ya', 'rar'];
+
+    let offset = 0;
+    let currentWord = {id:0, wordLength:2, letters:['b','a']};
+    type WordT = {
+      id: number,
+      wordLength: number,
+      letters: string[],
+    }
+    const chooseNextWord = (tileId:number) => {
+      currentWord = {id:tileId, wordLength:2, letters:['b','a', 'r',]};
+    }
+
+    const setLetterToDisplay = (tile: TileProps) => {
+        console.log('setLetterToDisplay START')
+        tile.letterToDisplay = currentWord.letters[0]; // grab first letter from wordbank.letters
+        currentWord.letters.shift(); // remove grabbed letter from array
+        console.log('setLetterToDisplay END,', currentWord)
+    }
+
+    for(let i=0; i<updatedGrid.length; i++){
+      for(let j=0; j<updatedGrid.length; j++){
+        const tile = updatedGrid[i][j];
+        console.log("TILE", tile, "CW", currentWord)
+          // if we still have letters in the current word to place for the next tile
+        if(!tile.isBlocked){
+          if(currentWord.letters.length > 0){
+            setLetterToDisplay(tile);
+          } else {
+            chooseNextWord(tile.id);
+            setLetterToDisplay(tile);
+          }
+        } else {
+          chooseNextWord(tile.id+1);
+          offset+=1;
+          console.log('CW', currentWord)
+        }   
+      } 
+    }
+    
+    return updatedGrid;
   };
 
   const returnTilePropsGrid = (): GridT => { 
@@ -50,7 +91,7 @@ function App(): JSX.Element {
           color: tileIsBlocked ? "black" : "white",
           width: TILE_WIDTH,
           letterToDisplay: "",
-          letterIsDisplayed: false,
+          letterIsDisplayed: true, // TODO switch this to false for default
           isBlocked: tileIsBlocked,
         }
         row.push(tileProps); //todo tileLetter func here?
@@ -90,12 +131,11 @@ function App(): JSX.Element {
           } if (startsVerticalWord) {
             verticalWordMap.push(tileProps.id)
           }
-          row.push(<Tile key={tileProps.id} {...tileProps}/>); //todo tileLetter func 
+          row.push(<Tile key={tileProps.id} {...tileProps} startsVerticalWord startsHorizontalWord />); //todo tileLetter func 
         }
       }
       tileMap.push(row);
     }
-    console.log("horizontalWordMap", horizontalWordMap, "verticalWordMap", verticalWordMap);
     return tileMap;
   }
 
