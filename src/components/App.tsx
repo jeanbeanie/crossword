@@ -33,25 +33,60 @@ function App(): JSX.Element {
       return upperTileIsBlocked && !tile.isBlocked; 
     }
   }
+  
+  const returnHorizontalAndVerticalMaps = (grid: GridT): {horizontalWordMap: number[]; verticalWordMap: number[]} => {
+    const horizontalWordMap: number[] = [];
+    const verticalWordMap: number[] = [];
+
+    for(let i=0; i<numTilesAcross; i++){
+      for(let j=0; j<numTilesAcross; j++){
+        const tile = grid[i][j];
+        const isLeftBlocked = j === 0 ? true : grid[i][j-1].isBlocked
+        const isUpperBlocked = i === 0 ? true : grid[i-1][j].isBlocked;
+
+        const startsHorizontalWord = tileStartsHorizontalWord(tile, j, isLeftBlocked);
+        const startsVerticalWord = tileStartsVerticalWord(tile, i, isUpperBlocked)
+        
+        if(startsHorizontalWord){
+          horizontalWordMap.push(tile.id);
+        } if (startsVerticalWord) {
+          verticalWordMap.push(tile.id)
+        }
+      }
+    }
+  
+    return { horizontalWordMap, verticalWordMap };
+  }
+    
 
   const addWordsToGrid = (grid: GridT): GridT => {
     const updatedGrid = grid;
     //const wordBank = ['a', 'aba', 'ba','bar','car', 'y', 'aar', 'yar', 'ya', 'rar'];
+    const { horizontalWordMap, verticalWordMap} = returnHorizontalAndVerticalMaps(grid);
 
-    let currentWord = {id:0, wordLength:2, letters:['b','a']};
     type WordT = {
-      id: number,
-      wordLength: number,
-      letters: string[],
+      id: number;
+      wordLength: number;
+      letters: string[];
     }
-    const chooseNextWord = (tileId: number) => {
-      currentWord = {id:tileId, wordLength:2, letters:['b','a', 'r',]};
+    const newCurrentWord: WordT = {id:0, wordLength:0, letters:[]};
+    let currentWord: WordT = newCurrentWord;
+
+
+    const chooseNextWord = (tile: TileProps): void => {
+      currentWord = newCurrentWord;
+      const { id } = tile;
+      const wordLength = 3; //TODO
+      const letters = ['b','a','r']; // TODO
+
+      currentWord = {id, wordLength, letters};
     }
 
-    const setLetterToDisplay = (tile: TileProps) => {
-        tile.letterToDisplay = currentWord.letters[0]; // grab first letter from wordbank.letters
-        currentWord.letters.shift(); // remove grabbed letter from array
+    const setLetterToDisplay = (tile: TileProps): void => {
+        tile.letterToDisplay = currentWord.letters[0];
+        currentWord.letters.shift(); // remove grabbed letter from currentWord array
     }
+    
 
     // horizontal word placement
     // todo add tile conflict checks and words from a real word bank
@@ -67,7 +102,7 @@ function App(): JSX.Element {
           } else { 
             // there are no letters left in currentWord, choose a new one
             // apply new currentWord letter to tile
-            chooseNextWord(tile.id);
+            chooseNextWord(tile);
             setLetterToDisplay(tile);
           } // if we are on the last tile of the row, ensure there are no more letters
           // TODO this is a hacky way to make this work and wont be necessary when the
@@ -108,10 +143,10 @@ function App(): JSX.Element {
   }
 
   const buildTileMap = (): JSX.Element[][] => {
+    // grid of empty white and black tiles
     const tilePropsMap = returnTilePropsGrid();
+
     const tileMap: JSX.Element[][] = [];
-    const horizontalWordMap: number[] = [];
-    const verticalWordMap: number[] = [];
 
     // build Grid rows
     for(let rowIndex=0; rowIndex<numTilesAcross; rowIndex++){
@@ -123,24 +158,12 @@ function App(): JSX.Element {
         const tileProps = tilePropsMap[rowIndex] ? tilePropsMap[rowIndex][colIndex] : false;
 
         if(tileProps){
-          // find out if adjacent tiles are blocked/filled in
-          const isLeftBlocked = colIndex === 0 ? true : tilePropsMap[rowIndex][colIndex-1].isBlocked
-          const isUpperBlocked = rowIndex === 0 ? true : tilePropsMap[rowIndex-1][colIndex].isBlocked;
-
-          const startsHorizontalWord = tileStartsHorizontalWord(tileProps, colIndex, isLeftBlocked);
-          const startsVerticalWord = tileStartsVerticalWord(tileProps, rowIndex, isUpperBlocked)
-          
-          if(startsHorizontalWord){
-            horizontalWordMap.push(tileProps.id);
-          } if (startsVerticalWord) {
-            verticalWordMap.push(tileProps.id)
-          }
-          row.push(<Tile key={tileProps.id} {...tileProps} startsVerticalWord startsHorizontalWord />); //todo tileLetter func 
+          row.push(<Tile key={tileProps.id} {...tileProps} />); //todo tileLetter func 
         }
       }
       tileMap.push(row);
     }
-    return tileMap;
+    return tileMap ;
   }
 
   const tileMap = buildTileMap();
