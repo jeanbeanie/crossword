@@ -38,40 +38,44 @@ function App(): JSX.Element {
     const updatedGrid = grid;
     //const wordBank = ['a', 'aba', 'ba','bar','car', 'y', 'aar', 'yar', 'ya', 'rar'];
 
-    let offset = 0;
     let currentWord = {id:0, wordLength:2, letters:['b','a']};
     type WordT = {
       id: number,
       wordLength: number,
       letters: string[],
     }
-    const chooseNextWord = (tileId:number) => {
+    const chooseNextWord = (tileId: number) => {
       currentWord = {id:tileId, wordLength:2, letters:['b','a', 'r',]};
     }
 
     const setLetterToDisplay = (tile: TileProps) => {
-        console.log('setLetterToDisplay START')
         tile.letterToDisplay = currentWord.letters[0]; // grab first letter from wordbank.letters
         currentWord.letters.shift(); // remove grabbed letter from array
-        console.log('setLetterToDisplay END,', currentWord)
     }
 
+    // horizontal word placement
+    // todo add tile conflict checks and words from a real word bank
     for(let i=0; i<updatedGrid.length; i++){
       for(let j=0; j<updatedGrid.length; j++){
         const tile = updatedGrid[i][j];
-        console.log("TILE", tile, "CW", currentWord)
-          // if we still have letters in the current word to place for the next tile
+        // when tile is not blocked
         if(!tile.isBlocked){
+          // if there are letters left in currentWord
           if(currentWord.letters.length > 0){
+            // select next letter and apply it to tile
             setLetterToDisplay(tile);
-          } else {
+          } else { 
+            // there are no letters left in currentWord, choose a new one
+            // apply new currentWord letter to tile
             chooseNextWord(tile.id);
             setLetterToDisplay(tile);
-          }
-        } else {
-          chooseNextWord(tile.id+1);
-          offset+=1;
-          console.log('CW', currentWord)
+          } // if we are on the last tile of the row, ensure there are no more letters
+          // TODO this is a hacky way to make this work and wont be necessary when the
+          // choose next word function is smarter
+          if (j===updatedGrid.length-1){ currentWord.letters = []; }
+        } else { // when tile is blocked
+          // clear letters for next new word
+          currentWord.letters = [];
         }   
       } 
     }
