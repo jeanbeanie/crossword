@@ -9,6 +9,7 @@ import Grid from './../components/Grid';
 //
 const GRID_WIDTH = 520;
 const TILE_WIDTH = 50;
+const wordBank = ['zi', 'h', 'woe'];
 
 type GridT = TileProps[][];
 
@@ -58,11 +59,43 @@ function App(): JSX.Element {
     return { horizontalWordMap, verticalWordMap };
   }
     
+  const returnWordLength = (grid: GridT, tile: TileProps, currentWordIndex: number, nextWordIndex: number): number => {
+    const nextWordIsOnSameRow = nextWordIndex < (tile.rowIndex+1)*numTilesAcross;
+    if(nextWordIsOnSameRow){
+      return (nextWordIndex-1) - currentWordIndex;
+    } else {
+      const lastTileInRow = (numTilesAcross*(tile.rowIndex+1)) - 1;
+      let lastUnblockedTileColIndex = lastTileInRow - (numTilesAcross*tile.rowIndex);
+      let lastUnblockedTileFound = false;
+
+      // TODO has chance of infinitely looping fix this!!!
+      // Find first unblocked tile from end of row (last tile of word will be this)
+      for(let c=lastUnblockedTileColIndex; lastUnblockedTileFound===false; c=c-1){
+        if(!grid[tile.rowIndex][c].isBlocked){
+          lastUnblockedTileColIndex = c;
+          lastUnblockedTileFound = true;
+        }
+      }
+      // index of word's last tile
+      const lastLetterInWord = ((numTilesAcross*tile.rowIndex)+lastUnblockedTileColIndex);
+      // return wordLength
+      return (lastLetterInWord - currentWordIndex)+1;
+    }
+  }
+
+  const returnValidWord = (wordLength: number): string =>
+    wordBank[wordBank.findIndex((el) => {
+      // TODO fix criteria for checking word bank heh
+      if(el.length === wordLength){
+        return true;
+      } else {
+        return false
+      }
+    })];
 
   const addWordsToGrid = (grid: GridT): GridT => {
     const updatedGrid = grid;
     const { horizontalWordMap, verticalWordMap} = returnHorizontalAndVerticalMaps(grid);
-    const wordBank = ['zi', 'h', 'woe'];
 
     type WordT = {
       id: number;
@@ -73,7 +106,6 @@ function App(): JSX.Element {
     let currentWord: WordT = defaultCurrentWord;
 
     const chooseNextWord = (tile: TileProps): void => {
-      
       // TODO clean this mess of a function
       currentWord = defaultCurrentWord;
       const { id } = tile;
@@ -81,51 +113,17 @@ function App(): JSX.Element {
       // HWM index 
       const index = horizontalWordMap.findIndex((el) => el === id);
       const nextWordIndex = horizontalWordMap[index + 1];
-
-      // TODO pull this out of this func asap!!!
-      const returnWordLength = (): number => {
-        const nextWordIsOnSameRow = nextWordIndex < (tile.rowIndex+1)*numTilesAcross;
-        if(nextWordIsOnSameRow){
-          return (nextWordIndex-1) - currentWordIndex;
-        } else {
-          const lastTileInRow = (numTilesAcross*(tile.rowIndex+1)) - 1;
-          const colIndex = lastTileInRow - (numTilesAcross*tile.rowIndex)
-          let lastUnblockedTileColIndex = colIndex;
-          let lastUnblockedTileFound = false;
-
-          // TODO has chance of infinitely looping fix this!!!
-          // Find first unblocked tile from end of row (last tile of word will be this)
-          for(let c=lastUnblockedTileColIndex; lastUnblockedTileFound===false; c=c-1){
-            if(!updatedGrid[tile.rowIndex][c].isBlocked){
-              lastUnblockedTileColIndex = c;
-              lastUnblockedTileFound = true;
-            }
-          }
-          // index of word's last tile
-          const lastLetterInWord = ((numTilesAcross*tile.rowIndex)+lastUnblockedTileColIndex);
-          // return wordLength
-          return (lastLetterInWord - currentWordIndex)+1;
-        }
-      }
-      const wordLength = returnWordLength();
+      const wordLength = returnWordLength(grid, tile, currentWordIndex, nextWordIndex);
       
       // choose word and set letters var as array of word's letters;
-      const letters = wordBank[wordBank.findIndex((el) => {
-        // TODO fix criteria for checking word bank heh
-        if(el.length === wordLength){
-          return true;
-        } else {
-          return false
-        }
-      })].split('');
+      const letters = returnValidWord(wordLength).split('');
 
       currentWord = {id, wordLength, letters};
-      // console.log("currentWord", currentWord)
     }
 
     const setLetterToDisplay = (tile: TileProps): void => {
-        tile.letterToDisplay = currentWord.letters[0];
-        currentWord.letters.shift(); // remove grabbed letter from currentWord array
+      tile.letterToDisplay = currentWord.letters[0];
+      currentWord.letters.shift(); // remove grabbed letter from currentWord array
     }
 
     // horizontal word placement
@@ -144,6 +142,10 @@ function App(): JSX.Element {
             // apply new currentWord letter to tile
             chooseNextWord(tile);
             setLetterToDisplay(tile);
+          }
+          // TODO set vertical word if tile is start of one
+          if(verticalWordMap.includes(tile.id)){
+            console.log("MAKE A VERT WORD HERE", tile)
           }
         } else { 
           // when tile is blocked clear letters for next new word
