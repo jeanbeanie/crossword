@@ -6,6 +6,8 @@ export interface TileProps {
   letterToDisplay: string;
   letterIsDisplayed: boolean;
   width: number;
+  rowIndex: number;
+  columnIndex: number;
   startsVerticalWord?: boolean;
   startsHorizontalWord?: boolean;
 }
