@@ -61,9 +61,8 @@ function App(): JSX.Element {
 
   const addWordsToGrid = (grid: GridT): GridT => {
     const updatedGrid = grid;
-    //const wordBank = ['a', 'aba', 'ba','bar','car', 'y', 'aar', 'yar', 'ya', 'rar'];
     const { horizontalWordMap, verticalWordMap} = returnHorizontalAndVerticalMaps(grid);
-    console.log("H", horizontalWordMap, "V", verticalWordMap);
+    const wordBank = ['zi', 'h', 'woe'];
 
     type WordT = {
       id: number;
@@ -73,17 +72,17 @@ function App(): JSX.Element {
     const defaultCurrentWord: WordT = {id:0, wordLength:0, letters:[]};
     let currentWord: WordT = defaultCurrentWord;
 
-
     const chooseNextWord = (tile: TileProps): void => {
-      currentWord = defaultCurrentWord;
-      const { id } = tile;
-      // HWM index 
-      const index = horizontalWordMap.findIndex((el) => el === id);
-      const currentWordIndex = id;
-      const nextWordIndex = horizontalWordMap[index + 1];
-      const wordBank = ['zi', 'h', 'woe']
       
       // TODO clean this mess of a function
+      currentWord = defaultCurrentWord;
+      const { id } = tile;
+      const currentWordIndex = id; // TODO change this
+      // HWM index 
+      const index = horizontalWordMap.findIndex((el) => el === id);
+      const nextWordIndex = horizontalWordMap[index + 1];
+
+      // TODO pull this out of this func asap!!!
       const returnWordLength = (): number => {
         const nextWordIsOnSameRow = nextWordIndex < (tile.rowIndex+1)*numTilesAcross;
         if(nextWordIsOnSameRow){
@@ -121,14 +120,13 @@ function App(): JSX.Element {
       })].split('');
 
       currentWord = {id, wordLength, letters};
-      console.log("currentWord", currentWord)
+      // console.log("currentWord", currentWord)
     }
 
     const setLetterToDisplay = (tile: TileProps): void => {
         tile.letterToDisplay = currentWord.letters[0];
         currentWord.letters.shift(); // remove grabbed letter from currentWord array
     }
-    
 
     // horizontal word placement
     // todo add tile conflict checks and words from a real word bank
@@ -146,12 +144,9 @@ function App(): JSX.Element {
             // apply new currentWord letter to tile
             chooseNextWord(tile);
             setLetterToDisplay(tile);
-          } // if we are on the last tile of the row, ensure there are no more letters
-          // TODO this is a hacky way to make this work and wont be necessary when the
-          // choose next word function is smarter
-          if (j===updatedGrid.length-1){ currentWord.letters = []; }
-        } else { // when tile is blocked
-          // clear letters for next new word
+          }
+        } else { 
+          // when tile is blocked clear letters for next new word
           currentWord.letters = [];
         }   
       } 
