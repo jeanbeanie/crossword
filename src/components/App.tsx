@@ -63,23 +63,65 @@ function App(): JSX.Element {
     const updatedGrid = grid;
     //const wordBank = ['a', 'aba', 'ba','bar','car', 'y', 'aar', 'yar', 'ya', 'rar'];
     const { horizontalWordMap, verticalWordMap} = returnHorizontalAndVerticalMaps(grid);
+    console.log("H", horizontalWordMap, "V", verticalWordMap);
 
     type WordT = {
       id: number;
       wordLength: number;
       letters: string[];
     }
-    const newCurrentWord: WordT = {id:0, wordLength:0, letters:[]};
-    let currentWord: WordT = newCurrentWord;
+    const defaultCurrentWord: WordT = {id:0, wordLength:0, letters:[]};
+    let currentWord: WordT = defaultCurrentWord;
 
 
     const chooseNextWord = (tile: TileProps): void => {
-      currentWord = newCurrentWord;
+      currentWord = defaultCurrentWord;
       const { id } = tile;
-      const wordLength = 3; //TODO
-      const letters = ['b','a','r']; // TODO
+      // HWM index 
+      const index = horizontalWordMap.findIndex((el) => el === id);
+      const currentWordIndex = id;
+      const nextWordIndex = horizontalWordMap[index + 1];
+      const wordBank = ['zi', 'h', 'woe']
+      
+      // TODO clean this mess of a function
+      const returnWordLength = (): number => {
+        const nextWordIsOnSameRow = nextWordIndex < (tile.rowIndex+1)*numTilesAcross;
+        if(nextWordIsOnSameRow){
+          return (nextWordIndex-1) - currentWordIndex;
+        } else {
+          const lastTileInRow = (numTilesAcross*(tile.rowIndex+1)) - 1;
+          const colIndex = lastTileInRow - (numTilesAcross*tile.rowIndex)
+          let lastUnblockedTileColIndex = colIndex;
+          let lastUnblockedTileFound = false;
+
+          // TODO has chance of infinitely looping fix this!!!
+          // Find first unblocked tile from end of row (last tile of word will be this)
+          for(let c=lastUnblockedTileColIndex; lastUnblockedTileFound===false; c=c-1){
+            if(!updatedGrid[tile.rowIndex][c].isBlocked){
+              lastUnblockedTileColIndex = c;
+              lastUnblockedTileFound = true;
+            }
+          }
+          // index of word's last tile
+          const lastLetterInWord = ((numTilesAcross*tile.rowIndex)+lastUnblockedTileColIndex);
+          // return wordLength
+          return (lastLetterInWord - currentWordIndex)+1;
+        }
+      }
+      const wordLength = returnWordLength();
+      
+      // choose word and set letters var as array of word's letters;
+      const letters = wordBank[wordBank.findIndex((el) => {
+        // TODO fix criteria for checking word bank heh
+        if(el.length === wordLength){
+          return true;
+        } else {
+          return false
+        }
+      })].split('');
 
       currentWord = {id, wordLength, letters};
+      console.log("currentWord", currentWord)
     }
 
     const setLetterToDisplay = (tile: TileProps): void => {
@@ -127,6 +169,8 @@ function App(): JSX.Element {
         const tileIsBlocked = i+2===j || i+6===j || j+2===i || j+6===i; // todo figure out other patterns
         const tileProps = {
           id: parseInt(`${i}${j}`),
+          columnIndex: j,
+          rowIndex: i,
           color: tileIsBlocked ? "black" : "white",
           width: TILE_WIDTH,
           letterToDisplay: "",
