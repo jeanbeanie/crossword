@@ -105,8 +105,8 @@ function App(): JSX.Element {
     const defaultCurrentWord: WordT = {id:0, wordLength:0, letters:[]};
     let currentWord: WordT = defaultCurrentWord;
 
+    // TODO clean this mess of a function
     const chooseNextWord = (tile: TileProps): void => {
-      // TODO clean this mess of a function
       currentWord = defaultCurrentWord;
       const { id } = tile;
       const currentWordIndex = id; // TODO change this
@@ -131,29 +131,35 @@ function App(): JSX.Element {
     for(let i=0; i<updatedGrid.length; i++){
       for(let j=0; j<updatedGrid.length; j++){
         const tile = updatedGrid[i][j];
-        // when tile is not blocked
-        if(!tile.isBlocked){
-          // if there are letters left in currentWord
-          if(currentWord.letters.length > 0){
-            // select next letter and apply it to tile
-            setLetterToDisplay(tile);
+        const letterIsSet = tile.letterToDisplay !== '';
+        console.log("letterIsSet", letterIsSet, "tile.letterToDisplay", tile.letterToDisplay);
+
+        if(!letterIsSet){ 
+          // when tile is not blocked
+          if(!tile.isBlocked){
+            // if there are letters left in currentWord
+            if(currentWord.letters.length > 0){
+              // select next letter and apply it to tile
+              setLetterToDisplay(tile);
+            } else { 
+              // there are no letters left in currentWord, choose a new one
+              // apply new currentWord letter to tile
+              chooseNextWord(tile);
+              setLetterToDisplay(tile);
+            }
+            // TODO set vertical word if tile is start of one
+            if(verticalWordMap.includes(tile.id)){
+              console.log("MAKE A VERT WORD HERE", tile)
+            }
           } else { 
-            // there are no letters left in currentWord, choose a new one
-            // apply new currentWord letter to tile
-            chooseNextWord(tile);
-            setLetterToDisplay(tile);
-          }
-          // TODO set vertical word if tile is start of one
-          if(verticalWordMap.includes(tile.id)){
-            console.log("MAKE A VERT WORD HERE", tile)
-          }
-        } else { 
-          // when tile is blocked clear letters for next new word
-          currentWord.letters = [];
-        }   
-      } 
-    }
-    
+            // when tile is blocked clear letters for next new word
+            // TODO this shouldnt be necessary
+            currentWord.letters = [];
+          }   
+        }
+      
+      }
+    }    
     return updatedGrid;
   };
 
